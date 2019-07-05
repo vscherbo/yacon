@@ -26,7 +26,7 @@ class YandexConnect():
         self.__token = os.environ.get('TOKEN')
         assert self.__token is not None, 'env TOKEN is not defined'
 
-    def run_api(self, api_call, payload, resource_id=None):
+    def run_api(self, api_call, payload, resource_id=None, pages=None):
         """ run API method
         params:
             api_call    dict with url and http_method
@@ -36,12 +36,13 @@ class YandexConnect():
             'Authorization': 'OAuth ' + self.__token,
             # 'User-Agent': USER_AGENT,
         }
-        #url = api_call['url']
-        """
-        my_args = {'name': 'Jim', 'age': 30, 'country': 'France'}
-        getattr(web, 'input')(**my_args)
-        """
         args_dic = {'url': api_call['url'], 'timeout': 10}
+
+        args_dic['headers'] = headers
+        if pages:
+            payload['per_page'] = pages['per_page']
+            payload['page'] = pages['page']
+
         if api_call['method'] == 'GET':
             method = requests.get
             args_dic['params'] = payload
@@ -53,29 +54,17 @@ class YandexConnect():
         elif api_call['method'] == 'PATCH':
             method = requests.patch
             args_dic['json'] = payload
-            #url += resource_id + '/'
             args_dic['url'] += resource_id + '/'
             headers['Content-Type'] = 'application/json; charset=utf-8'
         elif api_call['method'] == 'DELETE':
             method = requests.delete
-            #url += resource_id + '/'
             args_dic['url'] += resource_id + '/'
         else:
             logging.error('Unknown HTTP method')
             return None
 
-        args_dic['headers'] = headers
         logging.debug('args_dic=%s', args_dic)
         response = method(**args_dic)
-        """
-        response = method(
-            url,
-            json=payload,
-            #params=payload,
-            headers=headers,
-            timeout=10,
-        )
-        """
         # В случае ошибки, бросим исключение.
         response.raise_for_status()
         # А если всё хорошо, то вернём json.
@@ -109,7 +98,12 @@ def main():
     #res = yacon.run_api(API_GROUPS_LIST, {'fields': 'name,email'})
     #
     #res = yacon.groups_list({'fields': 'type,name,email,members,'})
-    res = yacon.departments_list({'fields': 'name,email,parents,label,description'})
+    res = yacon.departments_list(
+        {'fields': 'name,email,parents,label,description',
+         'page': 1,
+         'per_page': 1000
+        }
+    )
     #res = yacon.dept_patch(str(2), {'description': 'Отдел Информационных Технологий'})
 
 
