@@ -81,12 +81,34 @@ class YandexConnect():
         """
         return self.run_api(API_DEPARTMENTS_LIST, payload)
 
-    def dept_patch(self, dept_id, payload):
-        """ Get list of departments
+    def dept_id_by_label(self, dept_label, payload=None):
+        """ Get dept_id by it's label
         """
+        ret_id = None
+        if not payload:
+            payload = {}
+            payload['fields'] = 'label'
+        elif 'label' not in payload['fields']:
+            payload['fields'] += ',label'
+
+        res = self.run_api(API_DEPARTMENTS_LIST, payload)
+        for dept in res['result']:
+            if dept['label'] == dept_label:
+                #logging.debug('id=%s', dept['id'])
+                ret_id = dept['id']
+                break
+        return ret_id
+
+    def dept_patch(self, dept_id, payload):
+        """ Path department with dept_id
+        """
+        return self.run_api(API_DEPT_PATCH, dept_id, payload)
+
+    def dept_patch_by_label(self, dept_label, payload):
+        """ Path department with dept_label
+        """
+        dept_id = str(self.dept_id_by_label(dept_label))
         return self.run_api(API_DEPT_PATCH, payload, dept_id)
-
-
 
 def main():
     """ Just main() function
@@ -95,19 +117,28 @@ def main():
             %(levelname)-7s | %(asctime)-15s | %(message)s'
     logging.basicConfig(stream=sys.stdout, format=log_format, level='DEBUG')
     yacon = YandexConnect()
+    res = None
     #res = yacon.run_api(API_GROUPS_LIST, {'fields': 'name,email'})
     #
     #res = yacon.groups_list({'fields': 'type,name,email,members,'})
+    """
     res = yacon.departments_list(
         {'fields': 'name,email,parents,label,description',
          'page': 1,
          'per_page': 1000
         }
     )
+    it_dept_id = yacon.dept_id_by_label(
+        'it',
+        {'fields': 'name,email,parents,description'}
+        # {'fields': 'name,email,parents,label,description'}
+    )
+    logging.info('it_dept_id=%d', it_dept_id)
+    """
     #res = yacon.dept_patch(str(2), {'description': 'Отдел Информационных Технологий'})
-
-
-    logging.info(json.dumps(res, ensure_ascii=False, indent=4))
+    res = yacon.dept_patch_by_label('it', {'description': 'Отдел информационных технологий'})
+    if res:
+        logging.info(json.dumps(res, ensure_ascii=False, indent=4))
 
 if __name__ == '__main__':
     main()
