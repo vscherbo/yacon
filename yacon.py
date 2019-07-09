@@ -13,6 +13,9 @@ API_HOST = 'https://api.directory.yandex.net/v6'
 API_GROUPS_LIST = {'url': '%s/groups/' % API_HOST, 'method': 'GET'}
 API_DEPARTMENTS_LIST = {'url': '%s/departments/' % API_HOST, 'method': 'GET'}
 API_DEPT_PATCH = {'url': '%s/departments/' % API_HOST, 'method': 'PATCH'}
+API_USERS_LIST = {'url': '%s/users/' % API_HOST, 'method': 'GET'}
+API_USER_PATCH = {'url': '%s/users/' % API_HOST, 'method': 'PATCH'}
+API_USER_ALIAS = {'url': '%s/users/_user_id_/aliases/' % API_HOST, 'method': 'POST'}
 
 class YandexConnect():
     """
@@ -102,13 +105,31 @@ class YandexConnect():
     def dept_patch(self, dept_id, payload):
         """ Path department with dept_id
         """
-        return self.run_api(API_DEPT_PATCH, dept_id, payload)
+        return self.run_api(API_DEPT_PATCH, resource_id=dept_id, payload=payload)
 
     def dept_patch_by_label(self, dept_label, payload):
         """ Path department with dept_label
         """
         dept_id = str(self.dept_id_by_label(dept_label))
         return self.run_api(API_DEPT_PATCH, payload, dept_id)
+
+    def users_list(self, payload):
+        """ Get list of users
+        """
+        return self.run_api(API_USERS_LIST, payload)
+
+    def user_patch(self, user_id, payload):
+        """ Patch user with user_id
+        """
+        return self.run_api(API_USER_PATCH, resource_id=user_id, payload=payload)
+
+    def user_alias(self, user_id, name):
+        """ Set new alias to user with user_id
+        """
+        payload = {'name': name}
+        loc_api = API_USER_ALIAS.copy()
+        loc_api['url'] = loc_api['url'].replace('_user_id_', user_id)
+        return self.run_api(loc_api, payload=payload)
 
 def main():
     """ Just main() function
@@ -121,6 +142,7 @@ def main():
     #res = yacon.run_api(API_GROUPS_LIST, {'fields': 'name,email'})
     #
     #res = yacon.groups_list({'fields': 'type,name,email,members,'})
+
     """
     res = yacon.departments_list(
         {'fields': 'name,email,parents,label,description',
@@ -135,8 +157,17 @@ def main():
     )
     logging.info('it_dept_id=%d', it_dept_id)
     """
-    #res = yacon.dept_patch(str(2), {'description': 'Отдел Информационных Технологий'})
-    res = yacon.dept_patch_by_label('it', {'description': 'Отдел информационных технологий'})
+
+    #res = yacon.dept_patch_by_label('it', {'description': 'Отдел информационных технологий'})
+
+    #res = yacon.users_list({'fields': 'nickname,name,email,groups,'})
+
+    # Error 422: res = yacon.user_patch(str(1130000038951366), {'email': 'v.scherbo@tabloled.ru'})
+    # Error 422: res = yacon.user_patch(str(1130000038951366), {'nickname': 'v.scherbo'})
+    #res = yacon.user_patch(str(1130000038951366), {'position': 'ИТ директор'})
+    #res = yacon.user_patch(str(1130000038951366), {'is_enabled': False})
+    res = yacon.user_alias(str(1130000038951366), 'yacon')
+
     if res:
         logging.info(json.dumps(res, ensure_ascii=False, indent=4))
 
