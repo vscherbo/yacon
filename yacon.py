@@ -11,6 +11,9 @@ import requests
 
 API_HOST = 'https://api.directory.yandex.net/v6'
 API_GROUPS_LIST = {'url': '%s/groups/' % API_HOST, 'method': 'GET'}
+
+API_GROUP_MEMBERS = {'url': '%s/groups/_group_id_/members/' % API_HOST, 'method': 'GET'}
+
 API_DEPARTMENTS_LIST = {'url': '%s/departments/' % API_HOST, 'method': 'GET'}
 API_DEPT_PATCH = {'url': '%s/departments/' % API_HOST, 'method': 'PATCH'}
 API_USERS_LIST = {'url': '%s/users/' % API_HOST, 'method': 'GET'}
@@ -29,7 +32,7 @@ class YandexConnect():
         self.__token = os.environ.get('TOKEN')
         assert self.__token is not None, 'env TOKEN is not defined'
 
-    def run_api(self, api_call, payload, resource_id=None, pages=None):
+    def run_api(self, api_call, payload=None, resource_id=None, pages=None):
         """ run API method
         params:
             api_call    dict with url and http_method
@@ -78,6 +81,13 @@ class YandexConnect():
         """ Get list of groups
         """
         return self.run_api(API_GROUPS_LIST, payload)
+
+    def group_members(self, group_id):
+        """ Get group members list
+        """
+        loc_api = API_GROUP_MEMBERS.copy()
+        loc_api['url'] = loc_api['url'].replace('_group_id_', group_id)
+        return self.run_api(loc_api)
 
     def departments_list(self, payload):
         """ Get list of departments
@@ -142,6 +152,8 @@ def main():
     #res = yacon.run_api(API_GROUPS_LIST, {'fields': 'name,email'})
     #
     #res = yacon.groups_list({'fields': 'type,name,email,members,'})
+    # id=18 _email_admins
+    res = yacon.group_members(str(18))
 
     """
     res = yacon.departments_list(
@@ -166,7 +178,7 @@ def main():
     # Error 422: res = yacon.user_patch(str(1130000038951366), {'nickname': 'v.scherbo'})
     #res = yacon.user_patch(str(1130000038951366), {'position': 'ИТ директор'})
     #res = yacon.user_patch(str(1130000038951366), {'is_enabled': False})
-    res = yacon.user_alias(str(1130000038951366), 'yacon')
+    #res = yacon.user_alias(str(1130000038951366), 'yacon')
 
     if res:
         logging.info(json.dumps(res, ensure_ascii=False, indent=4))
