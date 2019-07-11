@@ -136,11 +136,9 @@ class YandexConnect():
             payload['fields'] += ',label'
 
         res = self.run_api(API_DEPARTMENTS_LIST, payload)
-        for dept in res['result']:
-            if dept['label'] == dept_label:
-                #logging.debug('id=%s', dept['id'])
-                ret_id = dept['id']
-                break
+        found_dept = [dept for dept in res['result'] if dept['label'] == dept_label]
+        if found_dept:
+            ret_id = found_dept[0]["id"]
         return ret_id
 
     def dept_patch(self, dept_id, payload):
