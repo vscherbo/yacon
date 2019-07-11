@@ -37,7 +37,7 @@ class YandexConnect():
         """ run API method
         params:
             api_call    dict with url and http_method
-            payload     parmaters for url
+            payload     parameters for url
         """
         headers = {
             'Authorization': 'OAuth ' + self.__token,
@@ -92,12 +92,28 @@ class YandexConnect():
         return self.run_api(loc_api)
 
     def group_add_member(self, group_id, payload):
-        """ Get group members list
+        """ Add a member to group with group_id
+        params:
+            group_id    group id
+            payload     '{"type": "user", "id":1130000038979341}'
         """
         group_id = str(group_id) if isinstance(group_id, int) else group_id
         loc_api = API_GROUP_ADD_MEMBER.copy()
         loc_api['url'] = loc_api['url'].replace('_group_id_', group_id)
         return self.run_api(loc_api, payload)
+
+    def group_add_member_by_login(self, group_id, login):
+        """ Add a member with login to group with group_id
+        params:
+            group_id    group's id
+            login       user's login
+        """
+        user_id = self.user_id_by_login(login)
+        payload = {}
+        payload['type'] = 'user'
+        payload['id'] = user_id
+        return self.group_add_member(group_id, payload)
+
 
     def group_create(self, payload):
         """ Create a group
@@ -144,6 +160,16 @@ class YandexConnect():
         """
         return self.run_api(API_USERS_LIST, payload)
 
+    def user_id_by_login(self, login):
+        """ Get user_id by his/her login(nickname)
+        """
+        payload = {'nickname': login}
+        res = self.run_api(API_USERS_LIST, payload)['result']
+        #logging.debug('type(res)=%s', type(res))
+        #logging.debug('type(res[0])=%s', type(res[0]))
+        #logging.debug('len(res)=%s', len(res))
+        return res[0]["id"]
+
     def user_patch(self, user_id, payload):
         """ Patch user with user_id
         """
@@ -162,9 +188,6 @@ class YandexConnect():
 def main():
     """ Just main() function
     """
-    log_format = '[%(filename)-21s:%(lineno)4s - %(funcName)20s()] \
-            %(levelname)-7s | %(asctime)-15s | %(message)s'
-    logging.basicConfig(stream=sys.stdout, format=log_format, level='DEBUG')
     yacon = YandexConnect()
     res = None
     #res = yacon.run_api(API_GROUPS_LIST, {'fields': 'name,email'})
@@ -202,5 +225,8 @@ def main():
         logging.info(json.dumps(res, ensure_ascii=False, indent=4))
 
 if __name__ == '__main__':
+    LOG_FORMAT = '[%(filename)-21s:%(lineno)4s - %(funcName)20s()] \
+            %(levelname)-7s | %(asctime)-15s | %(message)s'
+    logging.basicConfig(stream=sys.stdout, format=LOG_FORMAT, level='DEBUG')
     # main()
     fire.Fire(YandexConnect)
