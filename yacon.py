@@ -8,12 +8,13 @@ import sys
 import logging
 import json
 import requests
+import fire
 
 API_HOST = 'https://api.directory.yandex.net/v6'
 API_GROUPS_LIST = {'url': '%s/groups/' % API_HOST, 'method': 'GET'}
-
 API_GROUP_MEMBERS = {'url': '%s/groups/_group_id_/members/' % API_HOST, 'method': 'GET'}
-
+API_GROUP_ADD_MEMBER = {'url': '%s/groups/_group_id_/members/' % API_HOST, 'method': 'POST'}
+API_GROUP_CREATE = {'url': '%s/groups/' % API_HOST, 'method': 'POST'}
 API_DEPARTMENTS_LIST = {'url': '%s/departments/' % API_HOST, 'method': 'GET'}
 API_DEPT_PATCH = {'url': '%s/departments/' % API_HOST, 'method': 'PATCH'}
 API_USERS_LIST = {'url': '%s/users/' % API_HOST, 'method': 'GET'}
@@ -85,9 +86,23 @@ class YandexConnect():
     def group_members(self, group_id):
         """ Get group members list
         """
+        group_id = str(group_id) if isinstance(group_id, int) else group_id
         loc_api = API_GROUP_MEMBERS.copy()
         loc_api['url'] = loc_api['url'].replace('_group_id_', group_id)
         return self.run_api(loc_api)
+
+    def group_add_member(self, group_id, payload):
+        """ Get group members list
+        """
+        group_id = str(group_id) if isinstance(group_id, int) else group_id
+        loc_api = API_GROUP_ADD_MEMBER.copy()
+        loc_api['url'] = loc_api['url'].replace('_group_id_', group_id)
+        return self.run_api(loc_api, payload)
+
+    def group_create(self, payload):
+        """ Create a group
+        """
+        return self.run_api(API_GROUP_CREATE, payload)
 
     def departments_list(self, payload):
         """ Get list of departments
@@ -115,6 +130,7 @@ class YandexConnect():
     def dept_patch(self, dept_id, payload):
         """ Path department with dept_id
         """
+        dept_id = str(dept_id) if isinstance(dept_id, int) else dept_id
         return self.run_api(API_DEPT_PATCH, resource_id=dept_id, payload=payload)
 
     def dept_patch_by_label(self, dept_label, payload):
@@ -131,11 +147,13 @@ class YandexConnect():
     def user_patch(self, user_id, payload):
         """ Patch user with user_id
         """
+        user_id = str(user_id) if isinstance(user_id, int) else user_id
         return self.run_api(API_USER_PATCH, resource_id=user_id, payload=payload)
 
     def user_alias(self, user_id, name):
         """ Set new alias to user with user_id
         """
+        user_id = str(user_id) if isinstance(user_id, int) else user_id
         payload = {'name': name}
         loc_api = API_USER_ALIAS.copy()
         loc_api['url'] = loc_api['url'].replace('_user_id_', user_id)
@@ -184,4 +202,5 @@ def main():
         logging.info(json.dumps(res, ensure_ascii=False, indent=4))
 
 if __name__ == '__main__':
-    main()
+    # main()
+    fire.Fire(YandexConnect)
