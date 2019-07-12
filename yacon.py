@@ -30,8 +30,8 @@ class YandexConnect():
 
     def __init__(self):
         logging.getLogger(__name__).addHandler(logging.NullHandler())
-        self.__token = os.environ.get('TOKEN')
-        assert self.__token is not None, 'env TOKEN is not defined'
+        self.__token = os.environ.get('YACON_TOKEN')
+        assert self.__token is not None, 'env YACON_TOKEN is not defined'
 
     def run_api(self, api_call, payload=None, resource_id=None, pages=None):
         """ run API method
