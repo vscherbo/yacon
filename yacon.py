@@ -174,7 +174,7 @@ class YandexConnect():
         user_id = str(user_id) if isinstance(user_id, int) else user_id
         return self.run_api(API_USER_PATCH, resource_id=user_id, payload=payload)
 
-    def user_alias(self, user_id, name):
+    def set_user_alias(self, user_id, name):
         """ Set new alias to user with user_id
         """
         user_id = str(user_id) if isinstance(user_id, int) else user_id
@@ -217,7 +217,7 @@ def main():
     # Error 422: res = yacon.user_patch(str(1130000038951366), {'nickname': 'v.scherbo'})
     #res = yacon.user_patch(str(1130000038951366), {'position': 'ИТ директор'})
     #res = yacon.user_patch(str(1130000038951366), {'is_enabled': False})
-    #res = yacon.user_alias(str(1130000038951366), 'yacon')
+    #res = yacon.set_user_alias(str(1130000038951366), 'yacon')
 
     if res:
         logging.info(json.dumps(res, ensure_ascii=False, indent=4))
